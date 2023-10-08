@@ -1,0 +1,355 @@
+---
+title: "Week1_assignments_Heba_R Notebook"
+output: html_notebook
+---
+
+Task 1 - Literature
+
+a. What is the medically relevant insight from the article?
+ME variants (MEVs) are difficult to genotype and integrate in statistical genetics. MEVs could be drivers of human divergence and disease risk.
+The study reveals that MEVs can affect gene expression and may play a role in complex traits and diseases, 
+providing a new avenue for understanding the genetic basis of human health and disease susceptibility.
+Specifically, the article discusses the impact of MEVs on gene regulation, their associations with diseases 
+like keloid, and the potential for MEs to serve as targets for developing genotype-guided therapies
+
+b. Which genomics technology/ technologies were used?
+   * Whole-genome sequencing (WGS) to identify MEVs and their genotypes in various human populations.
+   * The authors used the 1000 Genomes Project datasets, which provided WGS data for thousands of individuals. They also employed genotyping-by-sequencing methods, such as imputation, to infer MEV genotypes in the GTEx and BioBank Japan (BBJ) datasets. 
+   * Additionally, the study used RNA-sequencing data to investigate the effects of MEVs on gene expression and conducted targeted experiments to validate the functional impact of specific MEVs on gene regulation.
+
+3- Further related research questions
+a. List and explain at least three questions/ hypotheses you can think of that
+extend the analysis presented in the paper.
+
+    1-	Study the possible underlying mechanisms by which MEVs influence gene expression? How they interact with regulatory elements or epigenetic modification
+    2-	Population-Specific MEV Effects, if it can be associated with disease in specific population while others are not
+    3-	what is their functional impact on cellular processes and pathways? May be use knockout or knockin models or to understand the consequences of disease associated MEVs at the cellular level.
+
+b. [Optional] Devise a computational analysis strategy for (some of) the listed questions under 3a.
+.........................................not enough time
+
+
+Task 2 - Git repositories and R Markdown
+...........................................done
+
+Task 3 - Introduction to R and online R course
+ .............................................. I know some basics in R 
+   
+#install Bioconductor package (contain tools for the analysis and comprehension of genomic data)
+
+```{r} 
+if (!require("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+BiocManager::install(version = "3.17")
+#load Bioconductor package
+library ("BiocManager")
+# install tidyverse package for data visualization 
+install.packages("tidyverse")
+library("tidyverse")
+```
+
+Task 4 - Using R example datasets
+
+```{r}
+# 1- read the internal CO2 dataset
+View(CO2)
+# 2- describe the content of the CO2 using help function
+?CO2()
+```
+The CO2 uptake of six plants from Quebec and six plants from Mississippi was measured at several levels of ambient 
+CO2 concentration. Half the plants of each type were chilled overnight before the experiment was conducted.
+
+```{r}
+# 3- avarage and median of CO2 uptake of the plants from Quebec and Mississippi
+# read column names 
+colnames(CO2)
+# statistical summary of CO2 in each species using by function 
+by(CO2$uptake, CO2$Type, summary) # short code for the same result
+# statistical summary of CO2 in each species separately
+summary(CO2$uptake[CO2$Type=="Quebec"]) 
+summary(CO2$uptake[CO2$Type=="Mississippi"])
+
+```
+4- Optional
+airway data from Bioconductor, How many genes are expressed in each sample? 
+how many genes are not expressed in any sample? 
+.....................................................No time!
+
+Task 5 - R Functions
+1- function to calculate the ratio of the mean and the median of a given vector 
+```{r}
+# first caclculate mean and median to get the information of each one and then calculate ratio
+mean_vector <- mean(vector).  # replace vector with name of the actual vector
+median_vector <- median (vector)
+vector_mean_median_ratio <- mean_vector / median_vector
+```
+
+2- function that ignores the lowest and the highest value from a given vector and calculate the mean.
+we can use condition if to ignore extremes and then run the mean. there is also trim function but not sure how to use it
+here is an example for mean help function that might be good option
+my_vector <- c(10, 5, 3, 8, 15, 12)
+x <- c(0:10, 50)
+xm <- mean(x)
+c(xm, mean(x, trim = 0.10))
+
+3- Write a short (max. 300 characters, no spaces) explanation of why, how, and when not to use pipes.
+......Pipes (in R, often represented as `%>%`) simplify code by passing data from one operation to another. 
+we can Use them for clarity and shorten codes but should avoid excessive nesting to maintain readability and avoid errors
+
+4- Write a short explanation (max. 300 characters, no spaces) of why apply-family of functions (apply, lapply, sapply etc.)  could be useful in your work. 
+......they are useful in saving time and automating repetitive tasks in data analysis as they apply specific function to specific data struture
+
+Task 6 - Basic visualization with R
+```{r}
+# install nummenmaa-package 
+install.packages("remotes")
+library(remotes)
+install_url("http://emotion.utu.fi/wp-content/uploads/2019/11
+/nummenmaa_1.0.tar.gz",dependencies=TRUE)
+
+```
+1. Compare the distributions of the body heights of the two species from the 'magic_guys.csv' dataset graphically
+```{r}
+# set directory in bioinformatics course folder
+setwd("~/Downloads/Bioinformatics_course/Bioinfo_course") # you don't have to run this code as you will choose different location
+```
+```{r}
+# read and load the magic_guy dataset
+magic_guys<- read_csv("magic_guys.csv")
+View(magic_guys)
+```
+```{r}
+# a. using the basic 'hist' function as well as ‘ggplot’ and ‘geom_histogram’
+#functions from the ggplot2 package.
+colnames(magic_guys)
+# Create a basic histogram using the hist function
+hist(magic_guys$length, 
+     main = "Distribution of Magic Guys",  # Main title of the plot
+     col = "blue",                         # Color of bars
+     breaks = 20)                          # Number of bins (experiment with different values)
+
+```
+```{r}
+# ggpplot, geom_bar, geom_histogram
+# create a df of the mean of each group 
+data_histogram <- magic_guys %>%
+  group_by(species) %>%
+  summarize(mean_length = mean(length))
+# use ggplot to create histogram with geom_bar and geom_histogram
+ggplot(data_histogram, aes(x = species, y = mean_length, angle = 45, fill= species))+ geom_bar(stat = "identity")
+ggplot(data_histogram, aes(y = mean_length, angle = 45, fill= species))+ geom_histogram(binwidth = 50)+ theme_classic()
+
+# note, I tried to have it differently for the histogram but doesn't work well, Do you have suggestions? 
+```
+b. Do the same comparison as in a. but with boxplots. If you want to use the ggplot2-package, use the functions ‘ggplot’ and ‘geom_boxplot’.
+```{r}
+boxplot(magic_guys$length~magic_guys$species)
+```
+
+```{r}
+# ggplot method
+ggplot(magic_guys, aes(x = species, y = length, fill= species))+ geom_boxplot()
+# note, In the figure it doesn't have the same shape of whiskers as basic boxplot function, did you have the same issue?
+```
+c. Save the plots with the ‘png’, ‘pdf’, and ‘svg’ formats. In which situation would
+you use which file format? 
+....... png for poster and presentation with high resolution, 
+....... pdf for printing and may be better for zoom
+....... svg for interactive web application and scalable and suitable for resizing 
+
+Note: let me know if the figures doesn't appear when you run the code so I can save and send them!
+
+2. Load the gene expression data matrix from the ‘microarray_data.tab’ dataset
+```{r}
+# load the matrix and creat a new data frame with name microarray_matrix to avoid changing the original one
+microarray_matrix<- read_table("microarray_data.tab")
+```
+a. How big is the matrix in terms of rows and columns?
+```{r}
+nrow(microarray_matrix)
+ncol(microarray_matrix)
+```
+b. Count the missing values per gene and visualize this result.
+```{r}
+# counting the missing value per gene
+missing_values_per_gene <- colSums(is.na(microarray_matrix))
+print(missing_values_per_gene) # a big list will arrise with gene name and number of missing values per each gene
+```
+```{r}
+# another method
+# Count missing values per gene using apply function
+missing_values_per_gene_new <- apply(microarray_matrix, 2, function(x) sum(is.na(x))) # it will save the result
+```
+```{r}
+# Create a data frame for plotting
+missing_data_df <- data.frame(Gene = colnames(microarray_matrix), Missing_Values = missing_values_per_gene)
+
+# Create a bar plot
+ggplot(missing_data_df, aes(x = Gene, y = Missing_Values)) +
+  geom_bar(stat = "identity", fill = "pink") +
+  labs(x = "Genes", y = "Missing Values Count") # why there is black lines under the bars, I tried to get what is it but failed, do you have any idea?
+```
+c. Find the genes for which there are more than X% (X=10%, 20%, 50%) missing values.
+```{r}
+# create a new data frame with the count of missing values in each gene
+missing_data_df <- data.frame(Gene = colnames(microarray_matrix), Missing_Values = missing_values_per_gene)
+# Define the threshold percentage (e.g., 10%, 20%, or 50%)
+thresholds <- c(10, 20, 50)
+```
+
+Genes for which there are more than 10% missing values
+```{r}
+# Loop through each threshold percentage (10%)
+for (threshold_percentage in thresholds) {
+  cat("Genes with more than", 10, "% missing values:\n")
+}
+
+# Use subset to filter genes based on the threshold
+genes_with_missing_values_more10 <- subset(missing_data_df, Missing_Values > ncol(microarray_matrix) * (10 / 100))$Gene
+  
+# Print the genes for the current threshold percentage
+cat(paste(genes_with_missing_values_more10, collapse = ", "), "\n\n")
+```
+Genes for which there are more than 20% missing values
+```{r}
+# Loop through each threshold percentage (20%)
+for (threshold_percentage in thresholds) {
+  cat("Genes with more than", 20, "% missing values:\n")
+}
+# Use subset to filter genes based on the threshold
+genes_with_missing_values_more20 <- subset(missing_data_df, Missing_Values > ncol(microarray_matrix) * (20/ 100))$Gene
+
+# Print the genes for the current threshold percentage
+cat(paste(genes_with_missing_values_more20, collapse = ", "), "\n\n")
+```
+Genes for which there are more than 50% missing values
+```{r}
+# Loop through each threshold percentage (50%)
+for (threshold_percentage in thresholds) {
+  cat("Genes with more than", 50, "% missing values:\n")
+}
+# Use subset to filter genes based on the threshold
+genes_with_missing_values_more50 <- subset(missing_data_df, Missing_Values > ncol(microarray_matrix) * (50/ 100))$Gene
+
+# Print the genes for the current threshold percentage
+cat(paste(genes_with_missing_values_more50, collapse = ", "), "\n\n")
+```
+d. Replace the missing values by the average expression value for the particular gene. (Note: Imputing data has to be used with caution!)
+```{r}
+# install dplyr package 
+install.packages("dplyr")
+library(dplyr)
+library(tidyr)
+```
+
+```{r}
+# get the mean of each column excluding NA
+column_means <-lapply(microarray_matrix_2, mean, na.rm = TRUE) 
+View(column_means)
+```
+```{r}
+# Replace NA values with column means for each column
+for (col_index in 1:ncol(microarray_matrix_2)) {
+  microarray_matrix_2[is.na(microarray_matrix_2[, col_index]), col_index] <- column_means[col_index]
+}
+View(microarray_matrix_2)
+```
+
+3. Visualize the data in the CO2 dataset in a way that gives you a deeper understanding of the data. What do you see?
+```{r}
+View(CO2)
+# comapre between species in conc and uptake of CO2
+# set a new data set for each species
+Quebec <- CO2[CO2$Type== "Quebec", ]
+Mississippi <-  CO2[CO2$Type== "Mississippi", ]
+# scatterplot for visualization of uptake level on each conc between species
+plot(Quebec$uptake~Quebec$conc, col="red", pch=0) # quebec uptake increase with the increase in concentration
+points(Mississippi$uptake~Mississippi$conc, col="blue", pch=1) # also positive relation between conc & uptake but lower than Quebec
+```
+```{r}
+# compare between the uptake in each treatment (chilled or non)
+chilled <- CO2[CO2$Treatment == "chilled", ]
+nonchilled <- CO2[CO2$Treatment == "nonchilled", ]
+plot(chilled$uptake~chilled$conc, col="purple", pch=0) 
+points(nonchilled$uptake~nonchilled$conc, col="green", pch=1) # non chilled treatment show high uptake of CO2 in both species
+```
+
+```{r}
+# compare between  species using boxplot to know some statistical information 
+boxplot(CO2$uptake~CO2$Type) # more uptake in Quebec
+boxplot(CO2$uptake~CO2$Treatment) # more uptake in nonchilled compared to cheilled in both species
+```
+Task 7
+```{r}
+# Install the Tidybiology package, which includes the data ‘chromosome’ and ‘proteins’
+install_github("hirscheylab/tidybiology")
+library(tidybiology)
+```
+
+a. Extract summary statistics (mean, median and maximum) for the following variables from the ‘chromosome’ data: variations, protein coding genes, and miRNAs. Utilize the tidyverse functions to make this as simply as possible.
+```{r}
+View(chromosome)
+# summary of variations
+summary(chromosome$variations)
+summary(chromosome$protein_codinggenes)
+summary(chromosome$mi_rna)
+```
+b. How does the chromosome size distribute? Plot a graph that helps to visualize this by using ggplot2 package functions.
+```{r}
+# check the column names of the dataset chromosome 
+colnames(chromosome)
+# Create the bar plot
+ggplot(chromosome, aes(x = id, y = length_mm)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  labs(x = "Chromosome", y = "Length (mm)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  ggtitle("Chromosome Size Distribution")
+```
+c. Does the number of protein coding genes or miRNAs correlate with the length of the chromosome? Make two separate plots to visualize these relationships.
+```{r}
+# Create a scatter plot for the relationship between length and protein-coding genes
+ggplot(chromosome, aes(x = length_mm, y = protein_codinggenes)) +
+  geom_point(col= "blue") +
+  labs(x = "Chromosome Length (mm)", y = "Number of Protein Coding Genes") +
+  ggtitle("Relationship Between Chromosome Length and Protein Coding Genes")
+```
+```{r}
+# Create a scatter plot for the relationship between length and miRNAs
+ggplot(chromosome, aes(x = length_mm, y = mi_rna)) +
+  geom_point(col="red") +
+  labs(x = "Chromosome Length (mm)", y = "Number of miRNAs") +
+  ggtitle("Relationship Between Chromosome Length and miRNAs")
+# yes it correlates, number of coding genes are higher in longer chromosome
+```
+d. Calculate the same summary statistics for the ‘proteins’ data variables length
+ and mass. Create a meaningful visualization of the relationship between these two variables by utilizing the ggplot2 package functions. Play with the colors, theme- and other visualization parameters to create a plot that pleases you.
+```{r}
+View(proteins)
+colnames(proteins)
+# summary of variations
+summary(proteins$length)
+summary(proteins$mass)
+```
+```{r}
+# Create a scatter plot
+ggplot(proteins, aes(x = length, y = mass)) +
+  geom_point(aes(color = length), size = 3) +
+  labs(x = "Protein Length", y = "Protein Mass") +
+  scale_color_gradient(low = "blue", high = "red") +
+  theme_minimal() +
+  ggtitle("Relationship Between Protein Length and Mass")
+```
+```{r}
+# Create a scatter plot with a rainbow color scale
+ggplot(proteins, aes(x = length, y = mass)) +
+  geom_point(aes(color = length), size = 3) +
+  labs(x = "Protein Length", y = "Protein Mass") +
+  scale_color_gradientn(colors = rainbow(9)) +  # Adjust the number of colors as needed
+  theme_minimal() +
+  ggtitle("Relationship Between Protein Length and Mass")
+```
+Note: can we ignore the last value to make the graph more spread, what do you think?
+
+Best luck ^_^
+
